@@ -1,0 +1,9 @@
+<?php if (count($listWidget->vars['records'])): ?>
+    <?= $this->makePartial('table_body_rows', ['listWidget' => $listWidget, 'componentOptions' => $componentOptions]) ?>
+<?php else: ?>
+    <tr class="no-data">
+        <td colspan="<?= $listWidget->vars['columnTotal'] ?>" class="nolink">
+            <p class="no-data"><?= $listWidget->vars['noRecordsMessage'] ?></p>
+        </td>
+    </tr>
+<?php endif ?>

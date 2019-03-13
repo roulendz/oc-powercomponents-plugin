@@ -1,0 +1,16 @@
+<div
+    data-control="formwidget"
+    data-refresh-handler="<?= $this->getEventHandler('onRefreshForm') ?>"
+    data-refresh-data='<?= json_encode($componentOptions) ?>'
+    class="form-widget form-elements layout pc-form"
+    role="form"
+    id="<?= $componentOptions['componentAlias'] ?>">
+
+    <?=
+        $this->makePartial('form', [
+            'extraVars' => $extraVars,
+            'componentOptions' => $componentOptions
+        ])
+    ?>
+
+</div>

@@ -1,0 +1,6 @@
+plugin:
+    name: 'initbiz.powercomponents::lang.plugin.name'
+    description: 'initbiz.powercomponents::lang.plugin.description'
+    author: Initbiz
+    icon: oc-icon-angle-double-up
+    homepage: ''

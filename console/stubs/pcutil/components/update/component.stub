@@ -1,0 +1,15 @@
+<?php namespace {{studly_author}}\{{studly_name}}\Components;
+
+use Initbiz\PowerComponents\Classes\FormComponentBase;
+
+class {{studly_model}}Update extends FormComponentBase
+{
+
+    public function componentDetails()
+    {
+        return [
+            'name'        => '{{studly_model}}Update Component',
+            'description' => 'Component rendering update form for {{model}}'
+        ];
+    }
+}

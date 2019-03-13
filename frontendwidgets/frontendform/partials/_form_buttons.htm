@@ -1,0 +1,72 @@
+<div class="form-buttons">
+    <div class="loading-indicator-container">
+    <?php if ($componentOptions['context'] == 'preview'): ?>
+        <a class="btn btn-link" href="<?= $componentOptions['listPageUrl'] ?>">
+            <?= e(trans('initbiz.powercomponents::lang.form_actions.back_to_list')) ?>
+        </a>
+        <a class="btn btn-primary" href="<?= $componentOptions['updatePageUrl'] ?>">
+            <?= e(trans('initbiz.powercomponents::lang.form_actions.update_record')) ?>
+        </a>
+    <?php elseif ($componentOptions['context'] == 'update'): ?>
+        <div data-request-data="
+                recordKey: '<?= $componentOptions['recordKey'] ?>',
+                recordKeyName: '<?= $componentOptions['recordKeyName'] ?>',
+                componentAlias: '<?= $componentOptions['componentAlias'] ?>'
+            ">
+            <button
+                type="submit"
+                data-request="<?= $this->getEventHandler('onUpdate') ?>"
+                data-load-indicator="<?= e(trans('initbiz.powercomponents::lang.form_actions.saving')) ?>"
+                class="btn btn-default">
+                <?= e(trans('initbiz.powercomponents::lang.form_actions.update')) ?>
+            </button>
+            <button
+                type="submit"
+                data-request="<?= $this->getEventHandler('onUpdate') ?>"
+                data-request-data="redirectPage:'<?= $componentOptions['listPageUrl'] ?>'"
+                data-load-indicator="<?= e(trans('initbiz.powercomponents::lang.form_actions.saving')) ?>"
+                class="btn btn-default">
+                <?= e(trans('initbiz.powercomponents::lang.form_actions.update_and_close')) ?>
+            </button>
+            <span class="btn-text">
+                <?= e(trans('initbiz.powercomponents::lang.form_actions.or')) ?> <a href="<?= $componentOptions['listPageUrl'] ?>"><?= e(trans('initbiz.powercomponents::lang.form_actions.cancel')) ?></a>
+            </span>
+            <button
+                class="btn btn-danger pull-right text-center"
+                data-request="<?= $this->getEventHandler('onDeleteRecord') ?>"
+                data-request-confirm="<?= e(trans('initbiz.powercomponents::lang.form_actions.delete_confirm')) ?>"
+                data-request-data="redirectPage:'<?= $componentOptions['listPageUrl'] ?>'"
+                >
+                <span class="oc-icon-trash-o">
+                    <?= e(trans('initbiz.powercomponents::lang.form_actions.delete')) ?>
+                </span>
+            </button>
+        </div>
+    <?php else: ?>
+        <button
+            type="submit"
+            data-request="<?= $this->getEventHandler('onSave') ?>"
+            data-request-data="
+                redirectPage:'<?= $componentOptions['createPageUrl'] ?>',
+                componentAlias: '<?= $componentOptions['componentAlias'] ?>'"
+            data-load-indicator="<?= e(trans('initbiz.powercomponents::lang.form_actions.saving')) ?>"
+            class="btn btn-primary">
+            <?= e(trans('initbiz.powercomponents::lang.form_actions.create_and_next')) ?>
+        </button>
+        <button
+            type="submit"
+            data-request="<?= $this->getEventHandler('onSave') ?>"
+            data-request-data="
+                redirectPage:'<?= $componentOptions['listPageUrl'] ?>',
+                componentAlias: '<?= $componentOptions['componentAlias'] ?>'"
+            data-load-indicator="<?= e(trans('initbiz.powercomponents::lang.form_actions.saving')) ?>"
+            class="btn btn-default">
+            <?= e(trans('initbiz.powercomponents::lang.form_actions.create_and_close')) ?>
+        </button>
+        <span class="btn-text">
+            <?= e(trans('initbiz.powercomponents::lang.form_actions.or')) ?> <a href="<?= $componentOptions['listPageUrl'] ?>"><?= e(trans('initbiz.powercomponents::lang.form_actions.cancel')) ?></a>
+        </span>
+    <?php endif ?>
+
+    </div>
+</div>

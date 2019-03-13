@@ -1,0 +1,16 @@
+<form class="search-form form-inline">
+    <div class="form-group">
+        <input
+            placeholder="<?= $placeholder ?>"
+            type="text"
+            name="<?= $this->getName() ?>"
+            value="<?= $value ?>"
+            class="form-control"
+            data-request="<?= $this->getEventHandler('onSubmit') ?>"
+            data-track-input
+            data-request-data="componentAlias:'<?= $componentOptions['componentAlias'] ?>'"
+            data-load-indicator
+            data-load-indicator-opaque
+            />
+    </div>
+</form>

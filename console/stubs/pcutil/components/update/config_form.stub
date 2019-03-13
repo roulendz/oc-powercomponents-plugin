@@ -1,0 +1,6 @@
+modelClass: {{studly_author}}\{{studly_name}}\Models\{{studly_model}}
+
+form:
+    fields:
+        id:
+            label: '{{model}} ID'

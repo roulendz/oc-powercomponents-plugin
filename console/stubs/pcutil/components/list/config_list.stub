@@ -1,0 +1,11 @@
+modelClass: {{studly_author}}\{{studly_name}}\Models\{{studly_model}}
+title: '{{model}} list'
+noRecordsMessage: 'backend::lang.list.no_records'
+toolbar:
+    buttons: list_toolbar-buttons
+    search:
+        prompt: 'backend::lang.list.search_prompt'
+
+columns:
+    id:
+        label: '{{model}} ID'

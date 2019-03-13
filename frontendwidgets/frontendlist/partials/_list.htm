@@ -1,0 +1,10 @@
+<div id="pc-list-<?= $componentOptions['componentAlias'] ?>">
+    <div id="pc-list-toolbar-<?= $componentOptions['componentAlias'] ?>" class="toolbar-widget list-header">
+        <?php if (isset($toolbarWidget)): ?>
+            <?= $this->makePartial('list_toolbar', ['toolbarWidget' => $toolbarWidget, 'componentOptions' => $componentOptions]) ?>
+        <?php endif ?>
+    </div>
+    <div id="pc-table-<?= $componentOptions['componentAlias'] ?>" class="list-widget list-scrollable-container">
+        <?= $this->makePartial('table', ['listWidget' => $listWidget, 'componentOptions' => $componentOptions]); ?>
+    </div>
+</div>

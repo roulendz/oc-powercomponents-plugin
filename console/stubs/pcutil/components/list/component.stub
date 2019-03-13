@@ -1,0 +1,16 @@
+<?php namespace {{studly_author}}\{{studly_name}}\Components;
+
+use Initbiz\PowerComponents\Classes\ListComponentBase;
+
+class {{studly_model}}List extends ListComponentBase
+{
+
+    public function componentDetails()
+    {
+        return [
+            'name'        => '{{studly_model}}List Component',
+            'description' => 'Component rendering list of {{model}}'
+        ];
+    }
+    
+}

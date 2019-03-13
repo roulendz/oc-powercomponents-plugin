@@ -1,0 +1,4 @@
+<h2>Create {{snake_model}}</h2>
+{{ form_open() }}
+    {{ pcrender('form', attribute(pcViewBag, __SELF__.alias) ) }}
+{{ form_close() }}

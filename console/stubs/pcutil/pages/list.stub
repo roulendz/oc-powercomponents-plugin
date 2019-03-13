@@ -1,0 +1,11 @@
+title = "{{studly_model}} list"
+url = "{{listpageurl}}"
+layout = "default"
+is_hidden = 0
+
+[{{camel_model}}List]
+recordPage = "{{previewpage}}"
+createPage = "{{createpage}}"
+
+==
+{% component '{{camel_model}}List' %}

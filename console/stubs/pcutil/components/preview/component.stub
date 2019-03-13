@@ -1,0 +1,16 @@
+<?php namespace {{studly_author}}\{{studly_name}}\Components;
+
+use Initbiz\PowerComponents\Classes\FormComponentBase;
+
+class {{studly_model}}Preview extends FormComponentBase
+{
+
+    public function componentDetails()
+    {
+        return [
+            'name'        => '{{studly_model}}Preview Component',
+            'description' => 'Component rendering preview form for {{model}}'
+        ];
+    }
+    
+}

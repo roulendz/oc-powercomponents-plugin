@@ -1,0 +1,37 @@
+
+<?php if ($this->vars['outsideTabs']->hasFields()): ?>
+    <?=
+        $this->makePartial('section', [
+            'tabs' => $this->vars['outsideTabs'],
+            'extraVars' => $extraVars,
+            'componentOptions' => $componentOptions
+        ])
+    ?>
+<?php endif ?>
+
+<?php if ($this->vars['primaryTabs']->hasFields()): ?>
+    <?=
+        $this->makePartial('section', [
+            'tabs' => $this->vars['primaryTabs'],
+            'extraVars' => $extraVars,
+            'componentOptions' => $componentOptions
+        ])
+    ?>
+<?php endif ?>
+
+<?php if ($this->vars['secondaryTabs']->hasFields()): ?>
+    <?=
+        $this->makePartial('section', [
+            'tabs' => $this->vars['secondaryTabs'],
+            'extraVars' => $extraVars,
+            'componentOptions' => $componentOptions
+        ])
+    ?>
+<?php endif ?>
+
+<?=
+    $this->makePartial('form_buttons', [
+        'extraVars' => $extraVars,
+        'componentOptions' => $componentOptions
+    ])
+?>

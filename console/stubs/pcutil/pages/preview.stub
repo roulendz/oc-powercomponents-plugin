@@ -1,0 +1,16 @@
+title = "Preview {{studly_model}}"
+url = "{{previewpageurl}}"
+layout = "default"
+is_hidden = 0
+
+[{{camel_model}}Preview]
+context = "preview"
+recordKey = "{{ :id }}"
+recordKeyName = "id"
+listPage = "{{listpage}}"
+createPage = "{{createpage}}"
+updatePage = "{{updatepage}}"
+previewPage = "{{previewpage}}"
+
+==
+{% component '{{camel_model}}Preview' %}

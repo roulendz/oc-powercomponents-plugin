@@ -1,0 +1,51 @@
+<tr>
+    <?php if ($listWidget->vars['showCheckboxes']): ?>
+        <th class="list-checkbox">
+            <div class="checkbox custom-checkbox nolabel">
+                <input type="checkbox" id="<?= $listWidget->getId('checkboxAll') ?>" />
+                <label for="<?= $listWidget->getId('checkboxAll') ?>">Check</label>
+            </div>
+        </th>
+    <?php endif ?>
+
+    <?php if ($listWidget->showTree): ?>
+        <th class="list-tree">
+            <span></span>
+        </th>
+    <?php endif ?>
+
+    <?php foreach ($listWidget->vars['columns'] as $key => $column): ?>
+        <?php if ($listWidget->showSorting && $column->sortable): ?>
+            <th
+                <?php if ($column->width): ?>style="width: <?= $column->width ?>"<?php endif ?>
+                class="<?= $listWidget->vars['sortColumn']==$column->columnName?'sort-'.$listWidget->vars['sortDirection'].' active':'sort-desc' ?> list-cell-name-<?= $column->getName() ?> list-cell-type-<?= $column->type ?>"
+                >
+                <a
+                    href="javascript:;"
+                    data-request="<?= $this->getEventHandler('onSort') ?>"
+                    data-stripe-load-indicator
+                    data-request-data="sortColumn: '<?= $column->columnName ?>', sortDirection: '<?= $listWidget->vars['sortDirection'] == 'asc' ? 'desc' : 'asc' ?>', page: <?= $listWidget->vars['pageCurrent'] ?>, componentAlias: '<?= $componentOptions['componentAlias'] ?>'">
+                    <?= $listWidget->getHeaderValue($column) ?>
+                </a>
+            </th>
+        <?php else: ?>
+            <th
+                <?php if ($column->width): ?>style="width: <?= $column->width ?>"<?php endif ?>
+                class="list-cell-name-<?= $column->getName() ?> list-cell-type-<?= $column->type ?>"
+                >
+                <span><?= $listWidget->getHeaderValue($column) ?></span>
+            </th>
+        <?php endif ?>
+    <?php endforeach ?>
+
+    <?php if ($listWidget->vars['showSetup']): ?>
+        <th class="list-setup">
+            <a href="javascript:;"
+                title="<?= e(trans('backend::lang.list.setup_title')) ?>"
+                data-control="popup"
+                data-handler="<?= $this->getEventHandler('onLoadSetup') ?>"
+                data-extra-data="componentAlias: '<?= $componentOptions['componentAlias'] ?>'"
+                ></a>
+        </th>
+    <?php endif ?>
+</tr>

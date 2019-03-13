@@ -1,0 +1,129 @@
+<?php
+    $fieldOptions = $field->options();
+$checkedValues = (array) $optionsField->value;
+$isScrollable = count($fieldOptions) > 10;
+$readOnly = $this->previewMode || $field->readOnly || $field->disabled;
+$quickselectEnabled = $field->getConfig('quickselect');
+?>
+<!-- Checkbox List -->
+<?php if ($readOnly && $field->value): ?>
+    <div class="field-relationwithpivot">
+        <?php $index = 0; foreach ($fieldOptions as $value => $option): ?>
+        <?php
+                $index++;
+                $checkboxId = 'checkbox_'.$field->getId().'_'.$index;
+        if (is_string($option)) $option = [$option];
+        ?>
+         <div class="checkbox custom-checkbox">
+              <div class="row">
+                   <div class="col-md-3">
+                        <label for="<?= $checkboxId ?>">
+                           <?= e(trans($option[0])) ?>
+                       </label>
+                 </div>
+                 <div class="col-md-4"></div>
+                 <div class="col-md-5">
+                        <?php
+                                $optionsField->fieldName =
+                                 $field->fieldName.'['.$value.']['.$optionsField->config['pivotData']['optionName'].']';
+                                  $optionsField->options = $optionsField->config['pivotData']['options'];
+                                     $optionsField->type = $optionsField->config['pivotData']['type'];
+
+                                    if(array_key_exists($value, $checkedValues)) {
+                                        $optionsField->value = $checkedValues[$value];
+                                    } else {
+                                        $optionsField->value = 1;
+                                    }
+
+                        ?>
+                         <?= $this->makePartial('field_'.$optionsField->type, ['field' => $optionsField]) ?>
+
+                 </div>
+            </div>
+
+
+             <?php if (isset($option[1])): ?>
+                <p class="help-block"><?= e(trans($option[1])) ?></p>
+             <?php endif ?>
+         </div>
+    <?php endforeach ?>
+    </div>
+
+<?php elseif (!$readOnly && count($fieldOptions)): ?>
+
+<div class="field-relationwithpivot <?= $isScrollable ? 'is-scrollable' : '' ?>">
+    <?php if ($quickselectEnabled || $isScrollable): ?>
+    <!-- Quick selection -->
+    <small>
+        <?= e(trans('backend::lang.form.select')) ?>:
+        <a href="javascript:;" data-field-checkboxlist-all><?= e(trans('backend::lang.form.select_all')) ?></a>,
+        <a href="javascript:;" data-field-checkboxlist-none><?= e(trans('backend::lang.form.select_none')) ?></a>
+    </small>
+    <?php endif ?>
+    <?php if ($isScrollable): ?>
+    <!-- Scrollable Checkbox list -->
+    <div class="field-checkboxlist-scrollable">
+        <div class="control-scrollbar" data-control="scrollbar">
+            <?php endif ?>
+
+            <input
+                    type="hidden"
+                    name="<?= $field->getName() ?>"
+                    value="0"/>
+
+            <?php $index = 0; foreach ($fieldOptions as $value => $option): ?>
+            <?php
+                $index++;
+                $checkboxId = 'checkbox_'.$field->getId().'_'.$index;
+            if (is_string($option)) $option = [$option];
+            ?>
+
+            <div class="checkbox custom-checkbox">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="<?= $checkboxId ?>">
+                            <?= e(trans($option[0])) ?>
+                        </label>
+                    </div>
+                    <div class="col-md-4"></div>
+                    <div class="col-md-5">
+                        <?php
+                         $optionsField->fieldName =
+                        $field->fieldName.'['.$value.']['.$optionsField->config['pivotData']['optionName'].']';
+                        $optionsField->options = $optionsField->config['pivotData']['options'];
+                        $optionsField->type = $optionsField->config['pivotData']['type'];
+                        if($optionsField->value)
+                        if(array_key_exists($value, $checkedValues)) {
+                        $optionsField->value = $checkedValues[$value];
+                        } else {
+                        $optionsField->value = 1;
+                        }
+                        ?>
+                        <?= $this->makePartial('field_'.$optionsField->type, ['field' => $optionsField]) ?>
+
+                    </div>
+
+                </div>
+
+
+                <?php if (isset($option[1])): ?>
+                <p class="help-block"><?= e(trans($option[1])) ?></p>
+                <?php endif ?>
+            </div>
+            <?php endforeach ?>
+
+            <?php if ($isScrollable): ?>
+        </div>
+    </div>
+    <?php endif ?>
+
+</div>
+
+<?php else: ?>
+
+<!-- No options specified -->
+<?php if ($field->placeholder): ?>
+<p><?= e(trans($field->placeholder)) ?></p>
+<?php endif ?>
+
+<?php endif ?>
