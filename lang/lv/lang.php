@@ -40,9 +40,9 @@
         'record_key_name_desc' => 'Column name with primary key',
     ],
     'form_actions' => [
-        'create' => 'Create',
-        'create_and_next' => 'Create and next',
-        'create_and_close' => 'Create and close',
+        'create' => 'Izveidot',
+        'create_and_next' => 'Izveidot',
+        'create_and_close' => 'izveidot un aivērt',
         'cancel' => 'Atcelt',
         'saving' => 'Lūdzu uzgaidiet, salgabājam',
         'or' => 'or',
@@ -55,7 +55,7 @@
         'delete_success' => 'Dzēšana pabeigta',
     ],
     'form_save' => [
-        'success' => 'Successfully saved'
+        'success' => 'Saglabāšana notikusi veiksmīgi'
     ],
     'permissions' => [
         'access_forbidden' => 'Access to data is forbidden'
@@ -64,7 +64,7 @@
         'not_defined' => '":name" not defined or bad class'
     ],
     'misc' => [
-        'loader_text' => 'Loading...'
+        'loader_text' => 'Ielādējam...'
     ],
     'alert' => [
         'cancel_button_text' => 'Atcelt',
