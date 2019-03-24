@@ -67,7 +67,7 @@
         'loader_text' => 'Ielādējam...'
     ],
     'alert' => [
-        'cancel_button_text' => 'Atcelt',
-        'confirm_button_text' => 'Dzēst',
+        'cancel_button_text' => 'Aizvērt',
+        'confirm_button_text' => 'Apstiprināt',
     ],
 ];
