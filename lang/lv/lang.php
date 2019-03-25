@@ -1,55 +1,55 @@
 <?php return [
     'plugin' => [
         'name' => 'PowerComponents',
-        'description' => 'Plugin with set of traits and behaviors for components that moves working with components to a next level'
+        'description' => 'Spraudnis, kas palīdzēs backend formas un sarakstus izmantot forntend'
     ],
     'list_component_properties' => [
-        'record_page' => 'Click record page',
-        'record_page_desc' => 'Choose page to redirect after clicking row',
-        'create_page' => 'Page to create record',
-        'create_page_desc' => 'Choose page with create record component',
+        'record_page' => 'Kur pāradresēt pēc nospiešanas uz ieraksta',
+        'record_page_desc' => 'Izvēlieties lapu, uz kuru pāradresēt pēc nospiešanas uz ieraksta',
+        'create_page' => 'Lapa, kur tiks izveidots jauns ieraksts',
+        'create_page_desc' => 'Lūdzu, izvēlieties lapu, kurā atrodas komponents: Izveidot Ierakstu',
     ],
     'list_toolbar' => [
-        'add_item' => 'Add item',
-        'filter_placeholder' => 'Type to filter'
+        'add_item' => 'Izveidot jaunu',
+        'filter_placeholder' => 'Filtra veids'
     ],
     'list_actions' => [
-        'title' => 'Actions',
-        'delete_confirmation' => 'Do you really want to delete the record?',
+        'title' => 'Darbības',
+        'delete_confirmation' => 'Vai jūs tiešām vēlaties dzēst šo ierakstu?',
     ],
     'component_properties' => [
-        'pages_group' => 'Pages',
-        'list_page' => 'List page',
-        'list_page_desc' => 'Page of records list',
-        'update_page' => 'Update page',
-        'update_page_desc' => 'Page to update record',
-        'create_page' => 'Create page',
-        'create_page_desc' => 'Page to create record',
-        'preview_page' => 'Preview page',
-        'preview_page_desc' => 'Page to preview record',
+        'pages_group' => 'Lapas',
+        'list_page' => 'Lapu saraksts',
+        'list_page_desc' => 'Lapa ar ierakstiem - saraksts',
+        'update_page' => 'Labot lapa',
+        'update_page_desc' => 'Lapa, kurā var labot ierakstus - kurā atrodas komponents: Labot Ierakstu',
+        'create_page' => 'Izveidot jaunu ierakstu - lapa',
+        'create_page_desc' => 'Lapa, kurā var izveidot jaunu ierakstu - kurā atrodas komponents: Izveidot jaunu Ierakstu',
+        'preview_page' => 'Ieraksta apskates lapa',
+        'preview_page_desc' => 'Lapa, kurā var apskatīt ierakstu - kurā atrodas komponents: Apskatīt Ierakstu',
     ],
     'form_component_properties' => [
-        'context' => 'Context',
-        'context_desc' => 'Context of component: create, update or preview',
-        'context_create' => 'Create',
-        'context_update' => 'Update',
-        'context_preview' => 'Preview',
+        'context' => 'Konteksts',
+        'context_desc' => 'Konteksts, kurā rādīt komponentu: izveidot, labot vai apskatīt',
+        'context_create' => 'Izveidot',
+        'context_update' => 'Labot',
+        'context_preview' => 'Apskatīt',
         'record_key' => 'Record ID',
-        'record_key_desc' => 'ID probably from URL to bind to page',
-        'record_key_name' => 'Primary key column',
-        'record_key_name_desc' => 'Column name with primary key',
+        'record_key_desc' => 'ID - parasti tiek paņemts no URL, lai sasaistītu ar attiecīgo ierakstu, var izmantot arī citus datubāzes laukus',
+        'record_key_name' => 'Primārās atslēgas kolonna, parasti ID, bet var arī izamntot SLUG vai ko citu, kas ir unikāls ierakts,',
+        'record_key_name_desc' => 'Kollonas nosaukums, kas tiks imantots kā virsraksts ar Primāro atslēgu',
     ],
     'form_actions' => [
         'create' => 'Izveidot',
         'create_and_next' => 'Izveidot',
-        'create_and_close' => 'izveidot un aivērt',
+        'create_and_close' => 'izveidot un aizvērt',
         'cancel' => 'Atcelt',
-        'saving' => 'Lūdzu uzgaidiet, salgabājam',
-        'or' => 'or',
+        'saving' => 'Lūdzu, uzgaidiet! Saglabājam.',
+        'or' => 'vai',
         'update' => 'Saglabāt',
         'update_and_close' => 'Saglabāt un aizvērt',
-        'back_to_list' => 'Back to list',
-        'update_record' => 'Update record',
+        'back_to_list' => 'Atpaka uz sarakstu',
+        'update_record' => 'Labot ierakstu',
         'delete' => 'Dzēst',
         'delete_confirm' => 'Vai esi pārliecināts?',
         'delete_success' => 'Dzēšana pabeigta',
@@ -58,10 +58,10 @@
         'success' => 'Saglabāšana notikusi veiksmīgi'
     ],
     'permissions' => [
-        'access_forbidden' => 'Access to data is forbidden'
+        'access_forbidden' => 'Pieeja datiem liegta, Jums te nav ko darīt!'
     ],
     'exception' => [
-        'not_defined' => '":name" not defined or bad class'
+        'not_defined' => '":name" lauks nav definēts vai nepareiza klase'
     ],
     'misc' => [
         'loader_text' => 'Ielādējam...'
@@ -70,4 +70,4 @@
         'cancel_button_text' => 'Aizvērt',
         'confirm_button_text' => 'Apstiprināt',
     ],
-];
+    ];
