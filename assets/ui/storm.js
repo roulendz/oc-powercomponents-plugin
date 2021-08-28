@@ -27,7 +27,7 @@
 =require ../../../../../modules/system/assets/ui/js/autocomplete.js
 =require ../../../../../modules/system/assets/ui/js/checkbox.js
 =require ../../../../../modules/system/assets/ui/js/checkbox.balloon.js
-=require ../../../../../modules/system/assets/ui/js/dropdown.js
+//require ../../../../../modules/system/assets/ui/js/dropdown.js
 =require ../../../../../modules/system/assets/ui/js/callout.js
 =require ../../../../../modules/system/assets/ui/js/datepicker.js
 =require ../../../../../modules/system/assets/ui/js/tooltip.js

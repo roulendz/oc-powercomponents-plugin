@@ -41,6 +41,11 @@ class FrontendSearch extends FrontendWidgetBase
      */
     public $scope;
 
+    /**
+     * @var bool Search on enter key instead of every key stroke.
+     */
+    public $searchOnEnter = false;
+
     //
     // Object properties
     //
@@ -71,6 +76,7 @@ class FrontendSearch extends FrontendWidgetBase
             'growable',
             'scope',
             'mode',
+            'searchOnEnter',
             'viewPaths',
         ]);
 
@@ -101,9 +107,9 @@ class FrontendSearch extends FrontendWidgetBase
 
         if ($this->partial) {
             return $this->controller->makePartial($this->partial);
-        } else {
-            return $this->makePartial('search', ['componentOptions' => $options]);
         }
+
+        return $this->makePartial('search', ['componentOptions' => $options]);
     }
 
     /**
@@ -114,6 +120,7 @@ class FrontendSearch extends FrontendWidgetBase
         $this->vars['cssClasses'] = implode(' ', $this->cssClasses);
         $this->vars['placeholder'] = Lang::get($this->prompt);
         $this->vars['value'] = $this->getActiveTerm();
+        $this->vars['searchOnEnter'] = $this->searchOnEnter;
     }
 
     /**

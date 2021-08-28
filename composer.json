@@ -1,0 +1,21 @@
+{
+    "name": "initbiz/powercomponents-plugin",
+    "type": "october-plugin",
+    "description": "Create forms and lists in frontend the way you love from backend",
+    "license": "proprietary",
+    "keywords": [
+        "october",
+        "octobercms",
+        "php"
+    ],
+    "authors": [
+        {
+            "name": "Tomasz Strojny",
+            "email": "tomasz@init.biz"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "composer/installers": "~1.0"
+    }
+}

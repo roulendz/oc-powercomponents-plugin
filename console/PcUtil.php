@@ -276,15 +276,23 @@ class PcUtil extends GeneratorCommand
         }
     }
 
+    // /**
+    //  * Get the desired plugin name from the input.
+    //  * The method is overrided. We have to set $this->pluginCode before making stubs
+    //  *
+    //  * @return string
+    //  */
+    // protected function getPluginInput()
+    // {
+    //     return $this->pluginCode;
+    // }
+
     /**
-     * Get the desired plugin name from the input.
-     * The method is overrided. We have to set $this->pluginCode before making stubs
-     *
-     * @return string
+     * getPluginInput gets the desired plugin name from the input
      */
-    protected function getPluginInput()
+    protected function getPluginInput(): string
     {
-        return $this->pluginCode;
+        return $this->argument('plugin');
     }
 
     /**
@@ -293,12 +301,8 @@ class PcUtil extends GeneratorCommand
      *
      * @return string
      */
-    protected function getDestinationPath()
+    protected function getDestinationPath(): string
     {
-        if ($this->absolutePaths) {
-            return base_path('/');
-        }
-
         $plugin = $this->getPluginInput();
 
         $parts = explode('.', $plugin);

@@ -1,7 +1,11 @@
 <div class="loading-indicator-container size-small pull-right">
     <div class="control-pagination">
         <span class="page-iteration">
-            <?= e(trans('backend::lang.list.pagination', ['from' => $listWidget->vars['pageFrom'], 'to' => $listWidget->vars['pageTo'], 'total' => $listWidget->vars['recordTotal']])) ?>
+            <?= e(trans('backend::lang.list.pagination', [
+                'from' => $listWidget->vars['pageFrom'],
+                'to' => $listWidget->vars['pageTo'],
+                'total' => $listWidget->vars['recordTotal']
+            ])) ?>
         </span>
         <?php if ($listWidget->vars['pageLast'] > 1): ?>
             <?php if ($listWidget->vars['pageCurrent'] > 1): ?>

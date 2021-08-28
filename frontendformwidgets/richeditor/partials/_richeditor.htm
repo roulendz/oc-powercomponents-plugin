@@ -1,0 +1,39 @@
+<?php
+    $fieldAlias = $this->alias . 'quillObj';
+?>
+
+<div class="standalone-container field-richeditor size-<?= $this->vars['size'] ?>">
+    <div id="<?= $this->getId() ?>"></div>
+</div>
+
+<input
+    type="hidden"
+    id="<?= $this->getId('input') ?>"
+    name="<?= $this->getFieldName() ?>"
+    value="<?= $this->vars['value'] ?>" />
+
+
+<script>
+    var <?= $fieldAlias ?> = new Quill('#<?= $this->getId() ?>', {
+      placeholder: "<?= $this->vars['placeholder'] ?>",
+      theme: 'snow'
+    });
+
+    //copy the innerHTML to input on every selection-change
+    <?= $fieldAlias ?>.on('editor-change', function() {
+        $("#<?= $this->getId('input') ?>").val(<?= $fieldAlias ?>.root.innerHTML);
+        $("#<?= $this->getId('input') ?>").trigger('change');
+    });
+
+    $( document ).ready(function() {
+        // resets the editor to empty
+        <?= $fieldAlias ?>.setContents([]);
+        // initialize the content to exactly what we have in our server (i.e. what we saved the last time as validated/sanitized by our server)
+        <?= $fieldAlias ?>.clipboard.dangerouslyPasteHTML(0, '<?= $this->vars['value'] ?>');
+        $('#<?= $this->getId("input") ?>').trigger("load");
+        
+        <?php if ($this->previewMode || $this->readOnly): ?>
+            <?= $fieldAlias ?>.disable();
+        <?php endif; ?>
+    });
+</script>

@@ -313,7 +313,7 @@ abstract class FormComponentBase extends EmpoweredComponentBase
 
         $dataToSave = $this->formWidget->getSaveData();
 
-        if ($this->clusterCanSaveData($dataToSave) !== true) {
+        if ($this->userCanSaveData($dataToSave) !== true) {
             Flash::error(Lang::get('initbiz.powercomponents::lang.permissions.access_forbidden'));
             return Redirect::refresh();
         }
@@ -330,6 +330,8 @@ abstract class FormComponentBase extends EmpoweredComponentBase
                 $modelToSave->save(null, $this->getSessionKey());
             }
         });
+
+        $this->afterSave($model);
 
         Flash::success(Lang::get('initbiz.powercomponents::lang.form_save.success'));
 
@@ -357,7 +359,7 @@ abstract class FormComponentBase extends EmpoweredComponentBase
 
         $model = $this->model->where($recordKeyName, $recordKey)->first();
 
-        if ($this->clusterCanUpdateData($model) !== true) {
+        if ($this->userCanUpdateData($model) !== true) {
             Flash::error(Lang::get('initbiz.powercomponents::lang.permissions.access_forbidden'));
             return Redirect::refresh();
         }
@@ -379,6 +381,9 @@ abstract class FormComponentBase extends EmpoweredComponentBase
             }
         });
 
+
+        $this->afterSave($model);
+        $this->afterUpdate($model);
         Flash::success(Lang::get('initbiz.powercomponents::lang.form_save.success'));
 
         $this->savedModel = $model;
@@ -404,7 +409,7 @@ abstract class FormComponentBase extends EmpoweredComponentBase
 
         $model = $this->model->where($recordKeyName, $recordKey)->first();
 
-        if ($this->clusterCanUpdateData($model) !== true) {
+        if ($this->userCanUpdateData($model) !== true) {
             Flash::error(Lang::get('initbiz.powercomponents::lang.permissions.access_forbidden'));
             return Redirect::refresh();
         }
@@ -439,8 +444,7 @@ abstract class FormComponentBase extends EmpoweredComponentBase
                 $this->options['recordKey']
             )->first();
 
-            // TODO: cluster, really?
-            if ($this->clusterCanSeeData($data) !== true) {
+            if ($this->userCanSeeData($data) !== true) {
                 return [ '#'.$this->getDivId() => $this->makePartial('403')];
             }
 
@@ -478,6 +482,8 @@ abstract class FormComponentBase extends EmpoweredComponentBase
             }
         }
 
+        // $this->formWidget->alias = $this->alias;
+
         $assets = ['X_OCTOBER_ASSETS' => $this->formWidget->getAssetPaths()];
         if (empty($result)) {
             $result = ['#'.$this->getDivId() => $this->formWidget->render($this->options)];
@@ -508,17 +514,17 @@ abstract class FormComponentBase extends EmpoweredComponentBase
     {
     }
 
-    public function clusterCanSeeData($data)
+    public function userCanSeeData($data)
     {
         return true;
     }
 
-    public function clusterCanSaveData($data)
+    public function userCanSaveData($data)
     {
         return true;
     }
 
-    public function clusterCanUpdateData($model)
+    public function userCanUpdateData($model)
     {
         return true;
     }
@@ -532,6 +538,15 @@ abstract class FormComponentBase extends EmpoweredComponentBase
     {
         return $modelsToSave;
     }
+
+    public function afterSave($model)
+    {
+    }
+
+    public function afterUpdate($model)
+    {
+    }
+
 
     // Helpers
 

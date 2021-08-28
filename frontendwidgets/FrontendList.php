@@ -1,24 +1,20 @@
 <?php namespace Initbiz\PowerComponents\FrontendWidgets;
 
 use Db;
-use App;
 use Html;
 use Lang;
-use Input;
 use Backend;
-use DateTime;
 use DbDongle;
 use Carbon\Carbon;
 use Cms\Classes\Page;
-use Cms\Classes\Theme;
 use ApplicationException;
 use Backend\Classes\ListColumn;
 use Backend\Classes\WidgetBase;
 use October\Rain\Database\Model;
 use System\Classes\PluginManager;
 use October\Rain\Html\Helper as HtmlHelper;
-use October\Rain\Router\Helper as RouterHelper;
 use System\Helpers\DateTime as DateTimeHelper;
+use October\Rain\Router\Helper as RouterHelper;
 use Initbiz\PowerComponents\Classes\FrontendWidgetBase;
 
 class FrontendList extends FrontendWidgetBase
@@ -28,14 +24,14 @@ class FrontendList extends FrontendWidgetBase
     //
 
     /**
-     * @var Model The initialized model used by the list.
-     */
-    public $model;
-
-    /**
      * @var array List column configuration.
      */
     public $columns;
+
+    /**
+     * @var Model List model object.
+     */
+    public $model;
 
     /**
      * @var string Link for each record row. Replace :id with the record id.
@@ -180,8 +176,6 @@ class FrontendList extends FrontendWidgetBase
      */
     public $cssClasses = [];
 
-
-
     /**
      * Initialize the widget, called by the constructor and free from its parameters.
      */
@@ -190,6 +184,7 @@ class FrontendList extends FrontendWidgetBase
         $this->fillFromConfig([
             'columns',
             'model',
+            'recordUrl',
             'recordOnClick',
             'noRecordsMessage',
             'showPageNumbers',
@@ -222,6 +217,30 @@ class FrontendList extends FrontendWidgetBase
     }
 
     /**
+     * @inheritDoc
+     */
+    protected function loadAssets()
+    {
+        //Load PowerComponents assets
+        parent::loadPcAssets();
+
+        // $this->addCss('/plugins/initbiz/powercomponents/assets/css/list.css');
+
+        $this->addJs([
+                      '~/modules/backend/widgets/lists/assets/js/october.list.js',
+                      // '~/modules/system/assets/ui/js/popup.js',
+                    ]);
+    }
+    /**
+     * Renders the widget.
+     */
+    public function render()
+    {
+        $this->prepareVars();
+        return $this->makePartial('list-container');
+    }
+
+    /**
      * Prepares the list data
      */
     public function prepareVars()
@@ -243,34 +262,33 @@ class FrontendList extends FrontendWidgetBase
 
         if ($this->showPagination) {
             $this->vars['pageCurrent'] = $this->records->currentPage();
+            // Store the currently visited page number in the session so the same
+            // data can be displayed when the user returns to this list.
+            $this->putSession('lastVisitedPage', $this->vars['pageCurrent']);
             if ($this->showPageNumbers) {
                 $this->vars['recordTotal'] = $this->records->total();
                 $this->vars['pageLast'] = $this->records->lastPage();
                 $this->vars['pageFrom'] = $this->records->firstItem();
                 $this->vars['pageTo'] = $this->records->lastItem();
-            } else {
+            }
+            else {
                 $this->vars['hasMorePages'] = $this->records->hasMorePages();
             }
-        } else {
+        }
+        else {
             $this->vars['recordTotal'] = $this->records->count();
             $this->vars['pageCurrent'] = 1;
         }
     }
 
+
     /**
-     * @inheritDoc
+     * Event handler for changing the filter
      */
-    protected function loadAssets()
+    public function onFilterFrontendList()
     {
-        //Load PowerComponents assets
-        parent::loadPcAssets();
-
-        // $this->addCss('/plugins/initbiz/powercomponents/assets/css/list.css');
-
-        $this->addJs([
-                      '~/modules/backend/widgets/lists/assets/js/october.list.js',
-                      // '~/modules/system/assets/ui/js/popup.js',
-                    ]);
+        $this->currentPageNumber = 1;
+        return $this->onRefresh();
     }
 
     /**
@@ -310,17 +328,31 @@ class FrontendList extends FrontendWidgetBase
     /**
      * Applies any filters to the model.
      */
-    public function prepareModel()
+    public function prepareQuery()
     {
         $query = $this->model->newQuery();
-
         $primaryTable = $this->model->getTable();
         $selects = [$primaryTable.'.*'];
         $joins = [];
         $withs = [];
+        $bindings = [];
 
-        /*
-         * Extensibility
+        /**
+         * @event backend.list.extendQueryBefore
+         * Provides an opportunity to modify the `$query` object before the List widget applies its scopes to it.
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.list.extendQueryBefore', function ($listWidget, $query) {
+         *         $query->whereNull('deleted_at');
+         *     });
+         *
+         * Or
+         *
+         *     $listWidget->bindEvent('list.extendQueryBefore', function ($query) {
+         *         $query->whereNull('deleted_at');
+         *     });
+         *
          */
         $this->fireSystemEvent('pc.frontend.list.extendQueryBefore', [$query]);
 
@@ -365,6 +397,11 @@ class FrontendList extends FrontendWidgetBase
          * Prepare related eager loads (withs) and custom selects (joins)
          */
         foreach ($this->getVisibleColumns() as $column) {
+            // If useRelationCount is enabled, eager load the count of the relation into $relation_count
+            if ($column->relation && @$column->config['useRelationCount']) {
+                $query->withCount($column->relation);
+            }
+
             if (!$this->isColumnRelated($column) || (!isset($column->sqlSelect) && !isset($column->valueFrom))) {
                 continue;
             }
@@ -429,7 +466,6 @@ class FrontendList extends FrontendWidgetBase
              * Relation column
              */
             if (isset($column->relation)) {
-
                 // @todo Find a way...
                 $relationType = $this->model->getRelationType($column->relation);
                 if ($relationType == 'morphTo') {
@@ -452,6 +488,11 @@ class FrontendList extends FrontendWidgetBase
                 $joinSql = $countQuery->select($joinSql)->toSql();
 
                 $selects[] = Db::raw("(".$joinSql.") as ".$alias);
+
+                /*
+                 * If this is a polymorphic relation there will be bindings that need to be added to the query
+                 */
+                $bindings = array_merge($bindings, $countQuery->getBindings());
             }
             /*
              * Primary column
@@ -472,6 +513,11 @@ class FrontendList extends FrontendWidgetBase
                     : $column->valueFrom;
             }
 
+            // Set the sorting column to $relation_count if useRelationCount enabled
+            if (isset($column->relation) && @$column->config['useRelationCount']) {
+                $sortColumn = $column->relation . '_count';
+            }
+
             $query->orderBy($sortColumn, $this->sortDirection);
         }
 
@@ -485,16 +531,42 @@ class FrontendList extends FrontendWidgetBase
         /*
          * Add custom selects
          */
-        $query->select($selects);
+        $query->addSelect($selects);
 
         /*
-         * Extensibility
+         * Add bindings for polymorphic relations
          */
-        if ($event = $this->fireSystemEvent('pc.frontend.list.extendQuery', [$query])) {
+        $query->addBinding($bindings, 'select');
+
+        /**
+         * @event backend.list.extendQuery
+         * Provides an opportunity to modify and / or return the `$query` object after the List widget has applied its scopes to it and before it's used to get the records.
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.list.extendQuery', function ($listWidget, $query) {
+         *         $newQuery = MyModel::newQuery();
+         *         return $newQuery;
+         *     });
+         *
+         * Or
+         *
+         *     $listWidget->bindEvent('list.extendQuery', function ($query) {
+         *         $query->whereNull('deleted_at');
+         *     });
+         *
+         */
+        if ($event = $this->fireSystemEvent('backend.list.extendQuery', [$query])) {
             return $event;
         }
 
         return $query;
+    }
+
+    public function prepareModel()
+    {
+        traceLog('Method ' . __METHOD__ . '() has been deprecated, please use the ' . __CLASS__ . '::prepareQuery() method instead.');
+        return $this->prepareQuery();
     }
 
     /**
@@ -503,20 +575,40 @@ class FrontendList extends FrontendWidgetBase
      */
     protected function getRecords()
     {
-        $model = $this->prepareModel();
+        $query = $this->prepareQuery();
 
         if ($this->showTree) {
-            $records = $model->getNested();
-        } elseif ($this->showPagination) {
-            $method = $this->showPageNumbers ? 'paginate' : 'simplePaginate';
-            $records = $model->{$method}($this->recordsPerPage, $this->currentPageNumber);
-        } else {
-            $records = $model->get();
+            $records = $query->getNested();
+        }
+        elseif ($this->showPagination) {
+            $method            = $this->showPageNumbers ? 'paginate' : 'simplePaginate';
+            $currentPageNumber = $this->getCurrentPageNumber($query);
+            $records = $query->{$method}($this->recordsPerPage, $currentPageNumber);
+        }
+        else {
+            $records = $query->get();
         }
 
         $records = $this->injectRecordUrl($records);
-        /*
-         * Extensibility
+
+        /**
+         * @event backend.list.extendRecords
+         * Provides an opportunity to modify and / or return the `$records` Collection object before the widget uses it.
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.list.extendRecords', function ($listWidget, $records) {
+         *         $model = MyModel::where('always_include', true)->first();
+         *         $records->prepend($model);
+         *     });
+         *
+         * Or
+         *
+         *     $listWidget->bindEvent('list.extendRecords', function ($records) {
+         *         $model = MyModel::where('always_include', true)->first();
+         *         $records->prepend($model);
+         *     });
+         *
          */
         if ($event = $this->fireSystemEvent('pc.frontend.list.extendRecords', [&$records])) {
             $records = $event;
@@ -560,6 +652,56 @@ class FrontendList extends FrontendWidgetBase
     }
 
     /**
+     * Returns the current page number for the list.
+     *
+     * This will override the current page number provided by the user if it is past the last page of available records.
+     *
+     * @param object $query
+     * @return int
+     */
+    protected function getCurrentPageNumber($query)
+    {
+        $currentPageNumber = $this->currentPageNumber;
+
+        if (!$currentPageNumber && empty($this->searchTerm)) {
+            // Restore the last visited page from the session if available.
+            $currentPageNumber = $this->getSession('lastVisitedPage');
+        }
+
+        $currentPageNumber = intval($currentPageNumber);
+
+        if ($currentPageNumber > 1) {
+            $count = $query->count();
+
+            // If the current page number is higher than the amount of available pages, go to the last available page
+            if ($count <= (($currentPageNumber - 1) * $this->recordsPerPage)) {
+                $currentPageNumber = ceil($count / $this->recordsPerPage);
+            }
+        }
+
+        return $currentPageNumber;
+    }
+
+    /**
+     * Returns the record URL address for a list row.
+     * @param  Model $record
+     * @return string
+     */
+    public function getRecordUrl($record)
+    {
+        if (isset($this->recordOnClick)) {
+            return 'javascript:;';
+        }
+
+        if (!isset($this->recordUrl)) {
+            return null;
+        }
+
+        $url = RouterHelper::replaceParameters($record, $this->recordUrl);
+        return Backend::url($url);
+    }
+
+    /**
      * Returns the onclick event for a list row.
      * @param  Model $record
      * @return string
@@ -570,8 +712,7 @@ class FrontendList extends FrontendWidgetBase
             return null;
         }
 
-        $columns = array_keys($record->getAttributes());
-        $recordOnClick = RouterHelper::parseValues($record, $columns, $this->recordOnClick);
+        $recordOnClick = RouterHelper::replaceParameters($record, $this->recordOnClick);
         return Html::attributes(['onclick' => $recordOnClick]);
     }
 
@@ -652,8 +793,58 @@ class FrontendList extends FrontendWidgetBase
 
         $this->addColumns($this->columns);
 
-        /*
-         * Extensibility
+        /**
+         * @event backend.list.extendColumns
+         * Provides an opportunity to modify the columns of a List widget
+         *
+         * Example usage:
+         *
+         *     Event::listen('backend.list.extendColumns', function ($listWidget) {
+         *         // Only for the User controller
+         *         if (!$listWidget->getController() instanceof \Backend\Controllers\Users) {
+         *             return;
+         *         }
+         *
+         *         // Only for the User model
+         *         if (!$listWidget->model instanceof \Backend\Models\User) {
+         *             return;
+         *         }
+         *
+         *         // Add an extra birthday column
+         *         $listWidget->addColumns([
+         *             'birthday' => [
+         *                 'label' => 'Birthday'
+         *             ]
+         *         ]);
+         *
+         *         // Remove a Surname column
+         *         $listWidget->removeColumn('surname');
+         *     });
+         *
+         * Or
+         *
+         *     $listWidget->bindEvent('list.extendColumns', function () use ($listWidget) {
+         *         // Only for the User controller
+         *         if (!$listWidget->getController() instanceof \Backend\Controllers\Users) {
+         *             return;
+         *         }
+         *
+         *         // Only for the User model
+         *         if (!$listWidget->model instanceof \Backend\Models\User) {
+         *             return;
+         *         }
+         *
+         *         // Add an extra birthday column
+         *         $listWidget->addColumns([
+         *             'birthday' => [
+         *                 'label' => 'Birthday'
+         *             ]
+         *         ]);
+         *
+         *         // Remove a Surname column
+         *         $listWidget->removeColumn('surname');
+         *     });
+         *
          */
         $this->fireSystemEvent('pc.frontend.list.extendColumns');
 
@@ -706,9 +897,11 @@ class FrontendList extends FrontendWidgetBase
     {
         if (is_string($config)) {
             $label = $config;
-        } elseif (isset($config['label'])) {
+        }
+        elseif (isset($config['label'])) {
             $label = $config['label'];
-        } else {
+        }
+        else {
             $label = studly_case($name);
         }
 
@@ -737,7 +930,7 @@ class FrontendList extends FrontendWidgetBase
             $config['searchable'] = false;
         }
 
-        $columnType = isset($config['type']) ? $config['type'] : null;
+        $columnType = $config['type'] ?? null;
 
         $column = new ListColumn($name, $label);
         $column->displayAs($columnType, $config);
@@ -762,6 +955,10 @@ class FrontendList extends FrontendWidgetBase
             $total++;
         }
 
+        if ($this->showTree) {
+            $total++;
+        }
+
         return $total;
     }
 
@@ -772,8 +969,23 @@ class FrontendList extends FrontendWidgetBase
     {
         $value = Lang::get($column->label);
 
-        /*
-         * Extensibility
+        /**
+         * @event backend.list.overrideHeaderValue
+         * Overrides the column header value in a list widget.
+         *
+         * If a value is returned from this event, it will be used as the value for the provided column.
+         * `$value` is passed by reference so modifying the variable in place is also supported. Example usage:
+         *
+         *     Event::listen('backend.list.overrideHeaderValue', function ($listWidget, $column, &$value) {
+         *         $value .= '-modified';
+         *     });
+         *
+         * Or
+         *
+         *     $listWidget->bindEvent('list.overrideHeaderValue', function ($column, $value) {
+         *         return 'Custom header value';
+         *     });
+         *
          */
         if ($response = $this->fireSystemEvent('pc.frontend.list.overrideHeaderValue', [$column, $value])) {
             $value = $response;
@@ -798,13 +1010,16 @@ class FrontendList extends FrontendWidgetBase
 
             if (!array_key_exists($columnName, $record->getRelations())) {
                 $value = null;
-            } elseif ($this->isColumnRelated($column, true)) {
+            }
+            elseif ($this->isColumnRelated($column, true)) {
                 $value = $record->{$columnName}->lists($column->valueFrom);
-            } elseif ($this->isColumnRelated($column) || $this->isColumnPivot($column)) {
+            }
+            elseif ($this->isColumnRelated($column) || $this->isColumnPivot($column)) {
                 $value = $record->{$columnName}
                     ? $column->getValueFromData($record->{$columnName})
                     : null;
-            } else {
+            }
+            else {
                 $value = null;
             }
         }
@@ -822,6 +1037,9 @@ class FrontendList extends FrontendWidgetBase
         else {
             if ($record->hasRelation($columnName) && array_key_exists($columnName, $record->attributes)) {
                 $value = $record->attributes[$columnName];
+            // Load the value from the relationship counter if useRelationCount is specified
+            } elseif ($column->relation && @$column->config['useRelationCount']) {
+                $value = $record->{"{$column->relation}_count"};
             } else {
                 $value = $record->{$columnName};
             }
@@ -834,7 +1052,7 @@ class FrontendList extends FrontendWidgetBase
          * If a value is returned from this event, it will be used as the raw value for the provided column.
          * `$value` is passed by reference so modifying the variable in place is also supported. Example usage:
          *
-         *     Event::listen('backend.list.overrideColumnValueRaw', function($record, $column, &$value) {
+         *     Event::listen('backend.list.overrideColumnValueRaw', function ($listWidget, $record, $column, &$value) {
          *         $value .= '-modified';
          *     });
          *
@@ -845,7 +1063,7 @@ class FrontendList extends FrontendWidgetBase
          *     });
          *
          */
-        if ($response = $this->fireSystemEvent('pc.frontend.list.overrideColumnValueRaw', [$record, $column, &$value])) {
+        if ($response = $this->fireSystemEvent('backend.list.overrideColumnValueRaw', [$record, $column, &$value])) {
             $value = $response;
         }
 
@@ -862,7 +1080,8 @@ class FrontendList extends FrontendWidgetBase
 
         if (method_exists($this, 'eval'. studly_case($column->type) .'TypeValue')) {
             $value = $this->{'eval'. studly_case($column->type) .'TypeValue'}($record, $column, $value);
-        } else {
+        }
+        else {
             $value = $this->evalCustomListType($column->type, $record, $column, $value);
         }
 
@@ -880,7 +1099,7 @@ class FrontendList extends FrontendWidgetBase
          * If a value is returned from this event, it will be used as the value for the provided column.
          * `$value` is passed by reference so modifying the variable in place is also supported. Example usage:
          *
-         *     Event::listen('backend.list.overrideColumnValue', function($record, $column, &$value) {
+         *     Event::listen('backend.list.overrideColumnValue', function ($listWidget, $record, $column, &$value) {
          *         $value .= '-modified';
          *     });
          *
@@ -907,8 +1126,23 @@ class FrontendList extends FrontendWidgetBase
     {
         $value = '';
 
-        /*
-         * Extensibility
+        /**
+         * @event backend.list.injectRowClass
+         * Provides opportunity to inject a custom CSS row class
+         *
+         * If a value is returned from this event, it will be used as the value for the row class.
+         * `$value` is passed by reference so modifying the variable in place is also supported. Example usage:
+         *
+         *     Event::listen('backend.list.injectRowClass', function ($listWidget, $record, &$value) {
+         *         $value .= '-modified';
+         *     });
+         *
+         * Or
+         *
+         *     $listWidget->bindEvent('list.injectRowClass', function ($record, $value) {
+         *         return 'strike';
+         *     });
+         *
          */
         if ($response = $this->fireSystemEvent('pc.frontend.list.injectRowClass', [$record])) {
             $value = $response;
@@ -939,8 +1173,13 @@ class FrontendList extends FrontendWidgetBase
                 return call_user_func_array($callback, [$value, $column, $record]);
             }
         }
+        
+        $customMessage = '';
+        if ($type === 'relation') {
+            $customMessage = 'Type: relation is not supported, instead use the relation property to specify a relationship to pull the value from and set the type to the type of the value expected.';
+        }
 
-        throw new ApplicationException(sprintf('List column type "%s" could not be found.', $type));
+        throw new ApplicationException(sprintf('List column type "%s" could not be found. %s', $type, $customMessage));
     }
 
     /**
@@ -952,6 +1191,10 @@ class FrontendList extends FrontendWidgetBase
             $value = implode(', ', $value);
         }
 
+        if (is_string($column->format) && !empty($column->format)) {
+            $value = sprintf($column->format, $value);
+        }
+
         return htmlentities($value, ENT_QUOTES, 'UTF-8', false);
     }
 
@@ -960,16 +1203,6 @@ class FrontendList extends FrontendWidgetBase
      */
     protected function evalNumberTypeValue($record, $column, $value)
     {
-        return $this->evalTextTypeValue($record, $column, $value);
-    }
-
-    /**
-     * Common mistake, relation is not a valid list column.
-     * @deprecated Remove if year >= 2018
-     */
-    protected function evalRelationTypeValue($record, $column, $value)
-    {
-        traceLog(sprintf('Warning: List column type "relation" for class "%s" is not valid.', get_class($record)));
         return $this->evalTextTypeValue($record, $column, $value);
     }
 
@@ -997,7 +1230,8 @@ class FrontendList extends FrontendWidgetBase
 
         if ($value) {
             $contents = Lang::get('backend::lang.list.column_switch_true');
-        } else {
+        }
+        else {
             $contents = Lang::get('backend::lang.list.column_switch_false');
         }
 
@@ -1017,7 +1251,8 @@ class FrontendList extends FrontendWidgetBase
 
         if ($column->format !== null) {
             $value = $dateTime->format($column->format);
-        } else {
+        }
+        else {
             $value = $dateTime->toDayDateTimeString();
         }
 
@@ -1045,7 +1280,7 @@ class FrontendList extends FrontendWidgetBase
 
         $dateTime = $this->validateDateTimeValue($value, $column);
 
-        $format = $column->format !== null ? $column->format : 'g:i A';
+        $format = $column->format ?? 'g:i A';
 
         $value = $dateTime->format($format);
 
@@ -1075,7 +1310,8 @@ class FrontendList extends FrontendWidgetBase
 
         if ($column->format !== null) {
             $value = $dateTime->format($column->format);
-        } else {
+        }
+        else {
             $value = $dateTime->toFormattedDateString();
         }
 
@@ -1141,7 +1377,13 @@ class FrontendList extends FrontendWidgetBase
 
         return Backend::dateTime($dateTime, $options);
     }
-
+    /**
+     * Process as background color, to be seen at list
+     */
+    protected function evalColorPickerTypeValue($record, $column, $value)
+    {
+        return  '<span style="width:30px; height:30px; display:inline-block; background:'.e($value).'; padding:10px"><span>';
+    }
     /**
      * Validates a column type as a date
      */
@@ -1233,16 +1475,12 @@ class FrontendList extends FrontendWidgetBase
             $query->$searchMethod(function ($q) use ($term, $columns, $scopeMethod) {
                 $q->$scopeMethod($term, $columns);
             });
-        } else {
+        }
+        else {
             $searchMethod = $boolean == 'and' ? 'searchWhere' : 'orSearchWhere';
             $query->$searchMethod($term, $columns, $this->searchMode);
         }
     }
-
-    //
-    // Sorting
-    //
-
 
     /**
      * Returns the current sorting column, saved in a session or cached.
@@ -1263,18 +1501,19 @@ class FrontendList extends FrontendWidgetBase
         if ($this->showSorting && ($sortOptions = $this->getSession('sort'))) {
             $this->sortColumn = $sortOptions['column'];
             $this->sortDirection = $sortOptions['direction'];
-        } else {
-            /*
-             * Supplied default
-             */
+        }
+
+        /*
+         * Supplied default
+         */
+        else {
             if (is_string($this->defaultSort)) {
                 $this->sortColumn = $this->defaultSort;
                 $this->sortDirection = 'desc';
-            } elseif (is_array($this->defaultSort) && isset($this->defaultSort['column'])) {
+            }
+            elseif (is_array($this->defaultSort) && isset($this->defaultSort['column'])) {
                 $this->sortColumn = $this->defaultSort['column'];
-                $this->sortDirection = (isset($this->defaultSort['direction'])) ?
-                    $this->defaultSort['direction'] :
-                    'desc';
+                $this->sortDirection = $this->defaultSort['direction'] ?? 'desc';
             }
         }
 
@@ -1300,9 +1539,9 @@ class FrontendList extends FrontendWidgetBase
     {
         if ($column === null) {
             return (count($this->getSortableColumns()) > 0);
-        } else {
-            return array_key_exists($column, $this->getSortableColumns());
         }
+
+        return array_key_exists($column, $this->getSortableColumns());
     }
 
     /**
@@ -1325,7 +1564,6 @@ class FrontendList extends FrontendWidgetBase
     //
     // List Setup
     //
-
 
     /**
      * Returns an array of allowable records per page.

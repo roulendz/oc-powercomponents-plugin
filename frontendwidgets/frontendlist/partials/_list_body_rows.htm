@@ -1,0 +1,8 @@
+<?php foreach ($listWidget->records as $record): ?>
+    <?= $this->makePartial('list_body_row', [
+        'listWidget' => $listWidget,
+        'componentOptions' => $componentOptions,
+        'record' => $record,
+        'treeLevel' => $listWidget->vars['treeLevel']
+    ]) ?>
+<?php endforeach ?>

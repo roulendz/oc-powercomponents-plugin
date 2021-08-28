@@ -13,18 +13,6 @@ use Initbiz\CumulusCore\Classes\Helpers;
  */
 trait CumulusIntegrator
 {
-    protected $clusterSlug;
-
-    /**
-     * Initialize parameters used in component
-     */
-    protected function initClusterSlugProperty()
-    {
-        //If $this->clusterSlug is {{...}} or null, than set as a current slug
-        if ($this->clusterSlug === null) {
-            $this->clusterSlug = Session::get('cumulus_clusterslug', Cookie::get('cumulus_clusterslug'));
-        }
-    }
 
     // Lists
 
@@ -35,22 +23,44 @@ trait CumulusIntegrator
      */
     public function extendQueryBefore($query)
     {
-        $query = $this->filterByCluster($query);
-
-        return $query;
+        return $this->filterByCluster($query);
     }
 
     /**
-     * filter query by cluster
+     * filter query by cluster slug
      * @param  October\Rain\Database\Builder $query query to extend
      * @return October\Rain\Database\Builder        filtered query
      */
     public function filterByCluster($query)
     {
-        $this->initClusterSlugProperty();
+        $cluster = Helpers::getCluster();
 
-        $query->whereHas('cluster', function ($query) {
-            $query->where('slug', $this->clusterSlug);
+        if (empty($cluster)) {
+            return $query;
+        }
+
+        $query->whereHas('cluster', function ($query) use ($cluster) {
+            $query->where('slug', $cluster->slug);
+        });
+
+        return $query;
+    }
+
+    /**
+     * filter query by cluster ID
+     * @param  October\Rain\Database\Builder $query query to extend
+     * @return October\Rain\Database\Builder        filtered query
+     */
+    public function filterByClusterId($query)
+    {
+        $cluster = Helpers::getCluster();
+
+        if (empty($cluster)) {
+            return $query;
+        }
+
+        $query->whereHas('cluster', function ($query) use ($cluster) {
+            $query->where('id', $cluster->id);
         });
 
         return $query;
@@ -65,9 +75,7 @@ trait CumulusIntegrator
      */
     public function extendFieldsBefore($fields)
     {
-        $fields = $this->addClusterSlugFormField($fields);
-
-        return $fields;
+        return $this->addClusterSlugFormField($fields);
     }
 
     /**
@@ -76,16 +84,44 @@ trait CumulusIntegrator
      */
     public function addClusterSlugFormField($fields)
     {
-        $this->initClusterSlugProperty();
+        $cluster = Helpers::getCluster();
+
+        if (empty($cluster)) {
+            return $fields;
+        }
 
         $field = [
             'label' => 'Cluster slug',
             'type' => 'text',
             'cssClass' => 'hidden',
-            'default' => $this->clusterSlug
+            'default' => $cluster->slug
         ];
 
         $fields['cluster_slug'] = $field;
+
+        return $fields;
+    }
+
+    /**
+     * Add cluster ID form field to form fields
+     * @param array $fields Form fields
+     */
+    public function addClusterIdFormField($fields)
+    {
+        $cluster = Helpers::getCluster();
+
+        if (empty($cluster)) {
+            return $fields;
+        }
+
+        $field = [
+            'label' => 'Cluster ID',
+            'type' => 'text',
+            'cssClass' => 'hidden',
+            'default' => $cluster->id
+        ];
+
+        $fields['cluster_id'] = $field;
 
         return $fields;
     }
@@ -95,7 +131,7 @@ trait CumulusIntegrator
      * @param  October\Rain\Database\Model $model
      * @return  boolean
      */
-    public function clusterCanSeeData($data)
+    public function userCanSeeData($data)
     {
         return $this->clusterCanUseModel($data);
     }
@@ -105,7 +141,7 @@ trait CumulusIntegrator
      * @param  array $data Data to be saved
      * @return $boolean       Can or cannot save the data
      */
-    public function clusterCanSaveData($data)
+    public function userCanSaveData($data)
     {
         return $this->clusterCanUseModel($data);
     }
@@ -116,7 +152,7 @@ trait CumulusIntegrator
      * @param  October\Rain\Database\Model $model
      * @return $boolean       Can or cannot update the model
      */
-    public function clusterCanUpdateData($data)
+    public function userCanUpdateData($data)
     {
         return $this->clusterCanUseModel($data);
     }
@@ -128,17 +164,25 @@ trait CumulusIntegrator
      */
     public function clusterCanUseModel($data)
     {
-        $this->initClusterSlugProperty();
+        $cluster = Helpers::getCluster();
+
+        if (empty($cluster)) {
+            return false;
+        }
 
         if (!is_array($data)) {
             $data = $data->toArray();
         }
 
-        //Get cluster id from data sent in form, cast to int and check
-        if ($data['cluster_slug'] === $this->clusterSlug) {
-            return true;
+        $can = false;
+
+        if (
+            (isset($data['cluster_slug']) && $data['cluster_slug'] === $cluster->slug) ||
+            (isset($data['cluster_id']) && (int) $data['cluster_id'] === $cluster->id)
+        ) {
+            $can = true;
         }
 
-        return false;
+        return $can;
     }
 }

@@ -1,6 +1,6 @@
 <div class="loading-indicator-container size-small pull-right">
     <div class="control-pagination">
-        <?php if ($pageCurrent > 1): ?>
+        <?php if ($listWidget->vars['pageCurrent'] > 1): ?>
             <a
                 href="javascript:;"
                 class="page-first"
@@ -13,12 +13,12 @@
                 class="page-first"
                 title="<?= e(trans('backend::lang.list.first_page')) ?>"></span>
         <?php endif ?>
-        <?php if ($pageCurrent > 1): ?>
+        <?php if ($listWidget->vars['pageCurrent'] > 1): ?>
             <a
                 href="javascript:;"
                 class="page-back"
                 data-request="<?= $this->getEventHandler('onPaginate') ?>"
-                data-request-data="page: <?= $pageCurrent-1 ?>"
+                data-request-data="page: <?= $listWidget->vars['pageCurrent']-1 ?>"
                 data-load-indicator="<?= e(trans('backend::lang.list.loading')) ?>"
                 title="<?= e(trans('backend::lang.list.prev_page')) ?>"></a>
         <?php else: ?>
@@ -30,13 +30,13 @@
             disabled
             name="page"
             class="form-control input-sm custom-select select-no-search">
-                <option value="<?= $pageCurrent ?>" selected><?= $pageCurrent ?></option>
+                <option value="<?= $listWidget->vars['pageCurrent'] ?>" selected><?= $listWidget->vars['pageCurrent'] ?></option>
         </select>
-        <?php if ($hasMorePages): ?>
+        <?php if ($listWidget->vars['hasMorePages']): ?>
             <a
                 href="javascript:;"
                 class="page-next"
-                data-request-data="page: <?= $pageCurrent+1 ?>"
+                data-request-data="page: <?= $listWidget->vars['pageCurrent']+1 ?>"
                 data-request="<?= $this->getEventHandler('onPaginate') ?>"
                 data-load-indicator="<?= e(trans('backend::lang.list.loading')) ?>"
                 title="<?= e(trans('backend::lang.list.next_page')) ?>"></a>

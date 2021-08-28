@@ -5,7 +5,7 @@ is_hidden = 0
 
 [{{camel_model}}Create]
 context = "create"
-recordKey = "{{ :id }}"
+recordKey = "{{ '{{ :id }}' }}"
 recordKeyName = "id"
 listPage = "{{listpage}}"
 createPage = "{{createpage}}"
@@ -13,4 +13,4 @@ updatePage = "{{updatepage}}"
 previewPage = "{{previewpage}}"
 
 ==
-{% component '{{camel_model}}Create' %}
+{{ '{% component' }} '{{camel_model}}Create' {{ '%}' }}

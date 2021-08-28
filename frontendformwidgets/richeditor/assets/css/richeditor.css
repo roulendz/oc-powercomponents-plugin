@@ -1,0 +1,28 @@
+.field-richeditor {
+    padding-bottom:30px;
+}
+
+.field-richeditor.size-tiny {
+    height: 50px;
+    min-height:50px;
+}
+
+.field-richeditor.size-small {
+    height: 100px;
+    min-height: 100px;
+}
+
+.field-richeditor.size-large {
+    height: 200px;
+    min-height: 200px;
+}
+
+.field-richeditor.size-huge {
+    height: 250px;
+    min-height: 250px;
+}
+
+.field-richeditor.size-giant {
+    height: 350px;
+    min-height: 350px;
+}

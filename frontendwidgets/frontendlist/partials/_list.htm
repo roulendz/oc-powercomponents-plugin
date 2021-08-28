@@ -4,7 +4,7 @@
             <?= $this->makePartial('list_toolbar', ['toolbarWidget' => $toolbarWidget, 'componentOptions' => $componentOptions]) ?>
         <?php endif ?>
     </div>
-    <div id="pc-table-<?= $componentOptions['componentAlias'] ?>" class="list-widget list-scrollable-container">
-        <?= $this->makePartial('table', ['listWidget' => $listWidget, 'componentOptions' => $componentOptions]); ?>
+    <div id="pc-table-<?= $componentOptions['componentAlias'] ?>" class="list-widget list-scrollable-container control-list list-scrollable" data-control="listwidget">
+            <?= $this->makePartial('list_table', ['listWidget' => $listWidget, 'componentOptions' => $componentOptions]); ?>
     </div>
 </div>

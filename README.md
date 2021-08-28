@@ -261,7 +261,7 @@ Remember that translations of plugin are not translations of your components. Tr
 
 Labels in forms and column names are defined in your `yaml` file, because they are not related with PowerComponents itself.
 
-When it comes to texts in buttons, they are defined in PowerComponents `lang` directory. Right now there are only two languages supported: English and Polish, so if you want to have your language available on marketplace, then please send us your translation. We cannot guarantee you full support of your language (we are just developers ;)).
+When it comes to texts in buttons, they are defined in PowerComponents `lang` directory. If you want to have your language available on marketplace, then please send us your translation. We cannot guarantee you full support of your language (we are just developers ;)).
 
 <a name="powercomponents-assets"></a> <div class="m-t-3 m-b-2"></div>
 ## PowerComponents's assets (CSSs, JSs)

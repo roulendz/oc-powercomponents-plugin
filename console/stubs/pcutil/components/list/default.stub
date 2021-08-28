@@ -1,2 +1,2 @@
 <h2>{{plural_model}} list</h2>
-{{ pcrender('list', attribute(pcViewBag, __SELF__.alias) ) }}
+{{ "{{ pcrender('list', attribute(pcViewBag, __SELF__.alias) ) }}" }}

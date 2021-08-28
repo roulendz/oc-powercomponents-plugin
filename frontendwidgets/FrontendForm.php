@@ -396,7 +396,7 @@ class FrontendForm extends FrontendWidgetBase
             $this->fields = $this->component->extendFieldsBefore($this->fields);
         }
 
-        $this->allTabs->outside = new FormTabs(FormTabs::SECTION_OUTSIDE, $this->config);
+        $this->allTabs->outside = new FormTabs(FormTabs::SECTION_OUTSIDE, $this->fields);
         $this->addFields($this->fields);
 
         /*

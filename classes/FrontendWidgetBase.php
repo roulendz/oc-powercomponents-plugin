@@ -137,10 +137,10 @@ abstract class FrontendWidgetBase extends Extendable
     {
         $locale = App::getLocale();
 
-        $this->addCss(['~/modules/backend/assets/vendor/sweet-alert/sweet-alert.css']);
+        $this->addCss(['~/plugins/planetadeleste/swal/assets/vendor/sweetalert/sweetalert.css']);
 
         $this->addJs(['~/plugins/initbiz/powercomponents/assets/ui/storm.js',
-                      '~/modules/backend/assets/vendor/sweet-alert/sweet-alert.js',
+                      '~/plugins/planetadeleste/swal/assets/vendor/sweetalert/sweetalert.min.js',
                       '~/modules/backend/assets/js/october.lang.js',
                       '~/modules/system/assets/js/lang/lang.'.$locale.'.js',
                       '~/modules/backend/assets/js/october.alert.js']);

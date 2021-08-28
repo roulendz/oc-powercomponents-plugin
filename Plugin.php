@@ -1,12 +1,8 @@
 <?php namespace Initbiz\PowerComponents;
 
-use App;
 use Lang;
 use Event;
 use System\Classes\PluginBase;
-use Initbiz\PowerComponents\Classes\FrontendWidgetManager;
-use Initbiz\Cumulusinvoices\Components\InvoiceCreate;
-use System\Classes\PluginManager;
 
 class Plugin extends PluginBase
 {
@@ -35,6 +31,7 @@ class Plugin extends PluginBase
             'Initbiz\PowerComponents\FrontendFormWidgets\TagList'     => 'taglist',
             'Initbiz\PowerComponents\FrontendFormWidgets\ColorPicker' => 'colorpicker',
             'Initbiz\PowerComponents\FrontendFormWidgets\DynamicForm' => 'dynamicform',
+            'Initbiz\PowerComponents\FrontendFormWidgets\RichEditor'  => 'richeditor',
         ];
     }
 
@@ -78,7 +75,7 @@ class Plugin extends PluginBase
         $divId = 'pc-'.$widgetName.'-'.$options['componentAlias'];
 
         return '
-        <div id="'.$divId.'">
+        <div id="'.$divId.'" class="empowered-component">
             '.$this->preloaderContent().'
         </div>
         <script>

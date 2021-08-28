@@ -5,13 +5,15 @@
 ?>
 <!-- Dropdown -->
 <?php if ($this->previewMode || $field->readOnly): ?>
-    <input type="text"
-        class="form-control"
-        id="<?= $field->getId() ?>"
-        name="<?= $field->getName() ?>"
-        readonly="readonly"
-        value="<?=(isset($fieldOptions[$field->value]))?e(trans($fieldOptions[$field->value])):''?>"
-    >
+    <div class="form-control" <?= $field->readOnly ? 'disabled="disabled"' : ''; ?>>
+        <?= (isset($fieldOptions[$field->value])) ? e(trans($fieldOptions[$field->value])) : '' ?>
+    </div>
+    <?php if ($field->readOnly): ?>
+        <input
+             type="hidden"
+             name="<?= $field->getName() ?>"
+             value="<?= $field->value ?>">
+    <?php endif; ?>
 <?php else: ?>
     <select
         id="<?= $field->getId() ?>"

@@ -10,7 +10,7 @@ use Cms\Classes\CodeBase;
 use ApplicationException;
 use Initbiz\PowerComponents\Classes\Helpers;
 use Initbiz\PowerComponents\FrontendWidgets\FrontendList;
-use Initbiz\PowerComponents\FrontendWidgets\FrontendListToolbar;
+use Initbiz\PowerComponents\FrontendWidgets\FrontendToolbar;
 use Initbiz\PowerComponents\Classes\EmpoweredComponentBase;
 
 abstract class ListComponentBase extends EmpoweredComponentBase
@@ -33,7 +33,7 @@ abstract class ListComponentBase extends EmpoweredComponentBase
     protected $requiredConfig = ['modelClass', 'columns'];
 
     /**
-     * @var \Initbiz\PowerComponents\FrontendWidgets\FrontendListToolbar Reference to the widget object.
+     * @var \Initbiz\PowerComponents\FrontendWidgets\FrontendToolbar Reference to the widget object.
      */
     protected $toolbarWidget;
 
@@ -78,7 +78,7 @@ abstract class ListComponentBase extends EmpoweredComponentBase
             FrontendList::class
         ];
         if (isset($this->config->toolbar)) {
-            $viewPathClasses[] = FrontendListToolbar::class;
+            $viewPathClasses[] = FrontendToolbar::class;
         }
 
         $this->viewPaths = $this->extractViewPaths($viewPathClasses);
@@ -92,7 +92,7 @@ abstract class ListComponentBase extends EmpoweredComponentBase
     {
         $toolbarConfig = $this->makeConfig($this->config->toolbar);
         $toolbarConfig->alias = $this->listWidget->alias . 'Toolbar';
-        $toolbarWidget = $this->makeFrontendWidget(FrontendListToolbar::class, $toolbarConfig);
+        $toolbarWidget = $this->makeFrontendWidget(FrontendToolbar::class, $toolbarConfig);
 
         /*
          * Link the Search Widget to the List Widget
@@ -112,7 +112,7 @@ abstract class ListComponentBase extends EmpoweredComponentBase
             $this->listWidget->setSearchTerm($searchWidget->getActiveTerm());
         }
 
-        $toolbarWidget->addViewPath($this->guessViewPathFrom(FrontendListToolbar::class));
+        $toolbarWidget->addViewPath($this->guessViewPathFrom(FrontendToolbar::class));
         $toolbarWidget->addViewPath($this->guessViewPathFrom(get_class($this)));
         return $toolbarWidget;
     }
@@ -213,6 +213,8 @@ abstract class ListComponentBase extends EmpoweredComponentBase
             $data['toolbarWidget'] = $this->toolbarWidget;
         }
 
+        $this->listWidget->alias = $this->alias;
+
         $assets = $this->listWidget->getAssetPaths();
 
         return [ 'X_OCTOBER_ASSETS' => $assets, '#'.$this->getDivId() => $this->makePartial('list', $data)];
@@ -232,9 +234,11 @@ abstract class ListComponentBase extends EmpoweredComponentBase
 
         $assets = $this->listWidget->getAssetPaths();
 
+        $this->listWidget->alias = $this->alias;
+
         $this->defaultSuffix = 'pc-table';
 
-        return [ 'X_OCTOBER_ASSETS' => $assets, '#'.$this->getDivId() => $this->makePartial('table', $data)];
+        return [ 'X_OCTOBER_ASSETS' => $assets, '#'.$this->getDivId() => $this->makePartial('list_table', $data)];
     }
 
 

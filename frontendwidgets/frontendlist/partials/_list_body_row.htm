@@ -1,0 +1,39 @@
+<?php
+    $expanded = $listWidget->vars['showTree'] ? $listWidget->isTreeNodeExpanded($record) : null;
+    $childRecords = $listWidget->vars['showTree'] ? $record->getChildren() : null;
+    $treeLevelClass = $listWidget->vars['showTree'] ? 'list-tree-level-'.$listWidget->vars['treeLevel'] : '';
+?>
+<tr class="<?= $treeLevelClass ?> <?= $listWidget->getRowClass($record) ?>">
+    <?php if ($listWidget->vars['showCheckboxes']): ?>
+        <?= $listWidget->makePartial('list_body_checkbox', ['record' => $record]) ?>
+    <?php endif ?>
+
+    <?php if ($listWidget->vars['showTree']): ?>
+        <?= $listWidget->makePartial('list_body_tree', [
+            'record' => $record,
+            'expanded' => $listWidget->expanded,
+            'childCount' => $record->getChildCount()
+        ]) ?>
+    <?php endif ?>
+
+    <?php $index = $url = 0; foreach ($listWidget->vars['columns'] as $key => $column): ?>
+        <?php $index++; ?>
+        <td class="list-cell-index-<?= $index ?> list-cell-name-<?= $column->getName() ?> list-cell-type-<?= $column->type ?> <?= $column->clickable ? '' : 'nolink' ?> <?= $column->cssClass ?>">
+            <?php if ($column->clickable && !$url && ($url = $record->url)): ?>
+                <a <?= $listWidget->getRecordOnClick($record) ?> href="<?= $url ?>">
+                    <?= $listWidget->getColumnValue($record, $column) ?>
+                </a>
+            <?php else: ?>
+                <?= $listWidget->getColumnValue($record, $column) ?>
+            <?php endif ?>
+        </td>
+    <?php endforeach ?>
+
+    <?php if ($listWidget->showSetup): ?>
+        <td class="list-setup">&nbsp;</td>
+    <?php endif ?>
+</tr>
+
+<?php if ($listWidget->showTree && $listWidget->expanded): ?>
+    <?= $this->makePartial('list_body_rows', ['records' => $childRecords, 'treeLevel' => $treeLevel+1]) ?>
+<?php endif ?>

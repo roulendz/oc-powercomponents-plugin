@@ -1,0 +1,16 @@
+<div class="control-toolbar">
+
+    <!-- Control Panel -->
+    <div class="toolbar-item toolbar-primary">
+        <?= $this->makePartial('list_toolbar-buttons', ['toolbarWidget' => $toolbarWidget, 'componentOptions' => $componentOptions]) ?>
+    </div>
+
+    <!-- List Search -->
+    <?php if ($toolbarWidget->vars['search']): ?>
+        <?php //TODO: is data-calculate-width a good idea here? ?>
+    <div class="toolbar-item" data-calculate-width style="width: 250px;">
+        <?= $toolbarWidget->searchWidget->render($componentOptions) ?>
+    </div>
+    <?php endif ?>
+
+</div>

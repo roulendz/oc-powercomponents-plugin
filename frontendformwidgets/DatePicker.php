@@ -1,5 +1,6 @@
 <?php namespace Initbiz\PowerComponents\FrontendFormWidgets;
 
+use Config;
 use Carbon\Carbon;
 use Backend\Classes\FormField;
 use Backend\Classes\FormWidgetBase;
@@ -50,6 +51,11 @@ class DatePicker extends FrontendFormWidgetBase
     public $firstDay = 0;
 
     /**
+     * @var bool show week numbers at head of row
+     */
+    public $showWeekNumber = false;
+
+    /**
      * @var bool change datetime exactly as is in database
      */
     public $ignoreTimezone = false;
@@ -75,19 +81,20 @@ class DatePicker extends FrontendFormWidgetBase
             'maxDate',
             'yearRange',
             'firstDay',
+            'showWeekNumber',
             'ignoreTimezone',
         ]);
 
         $this->mode = strtolower($this->mode);
 
         if ($this->minDate !== null) {
-            $this->minDate = is_integer($this->minDate)
+            $this->minDate = is_int($this->minDate)
                 ? Carbon::createFromTimestamp($this->minDate)
                 : Carbon::parse($this->minDate);
         }
 
         if ($this->maxDate !== null) {
-            $this->maxDate = is_integer($this->maxDate)
+            $this->maxDate = is_int($this->maxDate)
                 ? Carbon::createFromTimestamp($this->maxDate)
                 : Carbon::parse($this->maxDate);
         }
@@ -109,8 +116,14 @@ class DatePicker extends FrontendFormWidgetBase
     {
         if ($value = $this->getLoadValue()) {
             $value = DateTimeHelper::makeCarbon($value, false);
-
-            $value = $value instanceof Carbon ? $value->toDateTimeString() : $value;
+            if ($this->mode === 'date' && !$this->ignoreTimezone) {
+                $backendTimeZone = Config::get('cms.backendTimezone');
+                $value->setTimezone($backendTimeZone);
+                $value->setTime(0, 0, 0);
+                // This isn't work as expected when giving value from Carbon: +14 days gave +13 days actually
+                // $value->setTimezone(Config::get('app.timezone'));
+            }
+            $value = $value->toDateTimeString();
         }
 
         $this->vars['name'] = $this->getFieldName();
@@ -121,6 +134,7 @@ class DatePicker extends FrontendFormWidgetBase
         $this->vars['maxDate'] = $this->maxDate;
         $this->vars['yearRange'] = $this->yearRange;
         $this->vars['firstDay'] = $this->firstDay;
+        $this->vars['showWeekNumber'] = $this->showWeekNumber;
         $this->vars['ignoreTimezone'] = $this->ignoreTimezone;
         $this->vars['format'] = $this->format;
         $this->vars['formatMoment'] = $this->getDateFormatMoment();
@@ -130,6 +144,7 @@ class DatePicker extends FrontendFormWidgetBase
     protected function loadAssets()
     {
         $this->addCss(['~/plugins/initbiz/powercomponents/frontendformwidgets/datepicker/assets/css/datepicker.css']);
+        $this->addJs(['~/modules/backend/assets/js/october.datetime.js']);
     }
 
     /**

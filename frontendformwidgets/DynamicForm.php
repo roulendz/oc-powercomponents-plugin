@@ -117,25 +117,6 @@ class DynamicForm extends FrontendFormWidgetBase
         return $data;
     }
 
-    public function getSaveValue($value)
-    {
-        $fieldsDefinitions = $this->getFieldsDefinitions();
-        // TODO: test if this cannot be in better place
-        $this->model = $this->data;
-
-        // $list = $this->getFileList();
-        $attachRelations = array_merge($this->data->attachOne, $this->data->attachMany);
-
-        foreach ($attachRelations as $relation => $class) {
-            list($model, $attribute) = $this->resolveModelAttribute($relation);
-            if (false) {
-                // code...
-            }
-        }
-
-        return $value;
-    }
-
     protected function getFileList()
     {
         $list = $this

@@ -8,4 +8,4 @@ recordPage = "{{previewpage}}"
 createPage = "{{createpage}}"
 
 ==
-{% component '{{camel_model}}List' %}
+{{ '{% component' }} '{{camel_model}}List' {{ '%}' }}

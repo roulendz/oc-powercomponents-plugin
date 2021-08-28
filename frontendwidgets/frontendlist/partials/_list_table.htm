@@ -1,0 +1,28 @@
+<table class="table data" data-control="rowlink">
+    <thead>
+        <?= $this->makePartial('list_head_row', ['listWidget' => $listWidget, 'componentOptions' => $componentOptions]); ?>
+    </thead>
+    <tbody>
+        <?php if (count($listWidget->records)): ?>
+            <?= $this->makePartial('list_body_rows', ['listWidget' => $listWidget, 'componentOptions' => $componentOptions]); ?>
+        <?php else: ?>
+            <tr class="no-data">
+                <td colspan="<?= $listWidget->vars['columnTotal'] ?>" class="nolink">
+                    <p class="no-data"><?= $listWidget->vars['noRecordsMessage'] ?></p>
+                </td>
+            </tr>
+        <?php endif ?>
+    </tbody>
+</table>
+
+<?php if ($listWidget->vars['showPagination']): ?>
+    <div class="list-footer">
+        <div class="list-pagination">
+            <?php if ($listWidget->vars['showPageNumbers']): ?>
+                <?= $this->makePartial('list_pagination', ['listWidget' => $listWidget, 'componentOptions' => $componentOptions]); ?>
+            <?php else: ?>
+                <?= $this->makePartial('list_pagination_simple', ['listWidget' => $listWidget, 'componentOptions' => $componentOptions]); ?>
+            <?php endif ?>
+        </div>
+    </div>
+<?php endif ?>
