@@ -224,11 +224,11 @@ class FrontendList extends FrontendWidgetBase
         //Load PowerComponents assets
         parent::loadPcAssets();
 
-        // $this->addCss('/plugins/initbiz/powercomponents/assets/css/list.css');
+         $this->addCss('/plugins/initbiz/powercomponents/assets/css/list.css');
 
         $this->addJs([
-                      '~/modules/backend/widgets/lists/assets/js/october.list.js',
-                      // '~/modules/system/assets/ui/js/popup.js',
+                      '~/modules/backend/widgets/lists/assets/js/october.list.js', 'core',
+                       '~/modules/system/assets/ui/js/popup.js',
                     ]);
     }
     /**
@@ -281,6 +281,35 @@ class FrontendList extends FrontendWidgetBase
         }
     }
 
+    /**
+     * Event handler for refreshing the list.
+     */
+    public function onRefresh()
+    {
+        $this->prepareVars();
+
+        return ['#'.$this->getId() => $this->makePartial('list')];
+    }
+
+    /**
+     * Event handler for switching the page number.
+     */
+    public function onPaginate()
+    {
+        $this->currentPageNumber = post('page');
+
+        return $this->onRefresh();
+    }
+
+     /**
+     * Event handler for changing the filter
+     */
+    public function onFilter()
+    {
+        $this->currentPageNumber = 1;
+
+        return $this->onRefresh();
+    }
 
     /**
      * Event handler for changing the filter
@@ -300,14 +329,14 @@ class FrontendList extends FrontendWidgetBase
         if (!$this->model) {
             throw new ApplicationException(Lang::get(
                 'backend::lang.list.missing_model',
-                ['class'=>get_class($this)]
+                ['class'=>get_class($this->controller)]
             ));
         }
 
         if (!$this->model instanceof Model) {
             throw new ApplicationException(Lang::get(
                 'backend::lang.model.invalid_class',
-                ['model'=>get_class($this->model), 'class'=>get_class($this)]
+                ['model'=>get_class($this->model), 'class'=>get_class($this->controller)]
             ));
         }
 
@@ -577,19 +606,14 @@ class FrontendList extends FrontendWidgetBase
     {
         $query = $this->prepareQuery();
 
-        if ($this->showTree) {
-            $records = $query->getNested();
-        }
-        elseif ($this->showPagination) {
-            $method            = $this->showPageNumbers ? 'paginate' : 'simplePaginate';
+        if ($this->showPagination) {
+            $method = $this->showPageNumbers ? 'paginate' : 'simplePaginate';
             $currentPageNumber = $this->getCurrentPageNumber($query);
             $records = $query->{$method}($this->recordsPerPage, $currentPageNumber);
         }
         else {
             $records = $query->get();
         }
-
-        $records = $this->injectRecordUrl($records);
 
         /**
          * @event backend.list.extendRecords
@@ -610,7 +634,7 @@ class FrontendList extends FrontendWidgetBase
          *     });
          *
          */
-        if ($event = $this->fireSystemEvent('pc.frontend.list.extendRecords', [&$records])) {
+        if ($event = $this->fireSystemEvent('backend.list.extendRecords', [&$records])) {
             $records = $event;
         }
 
@@ -1173,7 +1197,7 @@ class FrontendList extends FrontendWidgetBase
                 return call_user_func_array($callback, [$value, $column, $record]);
             }
         }
-        
+
         $customMessage = '';
         if ($type === 'relation') {
             $customMessage = 'Type: relation is not supported, instead use the relation property to specify a relationship to pull the value from and set the type to the type of the value expected.';

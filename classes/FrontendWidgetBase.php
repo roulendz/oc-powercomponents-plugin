@@ -168,4 +168,23 @@ abstract class FrontendWidgetBase extends Extendable
 
         $this->controller->widget->{$this->alias} = $this;
     }
+
+         /**
+     * getConfig is a safe accessor for configuration values
+     * @param string $name Config name, supports array names like "field[key]"
+     * @param mixed $default Default value if nothing is found
+     * @return string
+     */
+    public function getConfig($name = null, $default = null)
+    {
+        return $this->getConfigValueFrom($this->config, $name, $default);
+    }
+
+    /**
+     * Returns the controller using this widget.
+     */
+    public function getController()
+    {
+        return $this->controller;
+    }
 }
