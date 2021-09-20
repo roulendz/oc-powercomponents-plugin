@@ -12,6 +12,7 @@ abstract class FrontendWidgetBase extends Extendable
     use \System\Traits\EventEmitter;
     use \Initbiz\PowerComponents\Traits\FrontendWidgetMaker;
     use \Initbiz\PowerComponents\Traits\AssetMaker;
+    // use \Initbiz\PowerComponents\Traits\VueMaker;
     use \Initbiz\PowerComponents\Traits\ViewMaker;
     use \Initbiz\PowerComponents\Traits\ConfigMaker;
     use \Initbiz\PowerComponents\Traits\SessionMaker;
@@ -80,7 +81,7 @@ abstract class FrontendWidgetBase extends Extendable
 
             $this->viewPaths[] = $this->configPath = $this->guessViewPath('/partials');
             $this->assetPath = $this->guessViewPath('/assets', true);
-            
+
             /*
              * Prepare assets used by this widget.
              */
