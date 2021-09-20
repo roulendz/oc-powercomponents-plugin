@@ -1,24 +1,35 @@
 <?php namespace Initbiz\PowerComponents\FrontendWidgets;
 
 use Db;
+use Str;
 use Html;
 use Lang;
 use Backend;
 use DbDongle;
 use Carbon\Carbon;
-use Cms\Classes\Page;
-use ApplicationException;
+use October\Rain\Html\Helper as HtmlHelper;
+use October\Rain\Router\Helper as RouterHelper;
+use System\Helpers\DateTime as DateTimeHelper;
+use System\Classes\PluginManager;
 use Backend\Classes\ListColumn;
 use Backend\Classes\WidgetBase;
 use October\Rain\Database\Model;
-use System\Classes\PluginManager;
-use October\Rain\Html\Helper as HtmlHelper;
-use System\Helpers\DateTime as DateTimeHelper;
-use October\Rain\Router\Helper as RouterHelper;
+use ApplicationException;
+use BackendAuth;
+use Exception;
 use Initbiz\PowerComponents\Classes\FrontendWidgetBase;
 
+/**
+ * Lists Widget
+ * Used for building back end lists, renders a list of model objects
+ *
+ * @package october\backend
+ * @author Alexey Bobkov, Samuel Georges
+ */
 class FrontendList extends FrontendWidgetBase
 {
+    use Backend\Traits\PreferenceMaker;
+
     //
     // Configurable properties
     //
@@ -190,6 +201,7 @@ class FrontendList extends FrontendWidgetBase
             'showPageNumbers',
             'recordsPerPage',
             'showSorting',
+            'perPageOptions',
             'defaultSort',
             'showCheckboxes',
             'showSetup',
@@ -202,7 +214,9 @@ class FrontendList extends FrontendWidgetBase
         /*
          * Configure the list widget
          */
-        $this->recordsPerPage = $this->getSession('per_page', $this->recordsPerPage);
+        if ($this->showSetup) {
+            $this->recordsPerPage = $this->getUserPreference('per_page', $this->recordsPerPage);
+        }
 
         if ($this->showPagination == 'auto') {
             $this->showPagination = $this->recordsPerPage && $this->recordsPerPage > 0;
@@ -224,13 +238,17 @@ class FrontendList extends FrontendWidgetBase
         //Load PowerComponents assets
         parent::loadPcAssets();
 
-         $this->addCss('/plugins/initbiz/powercomponents/assets/css/list.css');
+                 //$this->addCss('/plugins/initbiz/powercomponents/assets/ui/storm.css');
+        $this->addCss('/modules/system/assets/ui/storm.css');
+
 
         $this->addJs([
-                      '~/modules/backend/widgets/lists/assets/js/october.list.js', 'core',
-                       '~/modules/system/assets/ui/js/popup.js',
+                      '~/modules/backend/widgets/lists/assets/js/october.list.js',
+                      '~/modules/backend/vuecomponents/modal/assets/js/modal-utils.js',
+                        'core',
                     ]);
     }
+
     /**
      * Renders the widget.
      */
@@ -329,14 +347,14 @@ class FrontendList extends FrontendWidgetBase
         if (!$this->model) {
             throw new ApplicationException(Lang::get(
                 'backend::lang.list.missing_model',
-                ['class'=>get_class($this->controller)]
+                ['class'=>get_class($this)]
             ));
         }
 
         if (!$this->model instanceof Model) {
             throw new ApplicationException(Lang::get(
                 'backend::lang.model.invalid_class',
-                ['model'=>get_class($this->model), 'class'=>get_class($this->controller)]
+                ['model'=>get_class($this->model), 'class'=>get_class($this)]
             ));
         }
 
@@ -634,7 +652,7 @@ class FrontendList extends FrontendWidgetBase
          *     });
          *
          */
-        if ($event = $this->fireSystemEvent('backend.list.extendRecords', [&$records])) {
+        if ($event = $this->fireSystemEvent('pc.frontend.list.extendRecords', [&$records])) {
             $records = $event;
         }
 
@@ -770,8 +788,8 @@ class FrontendList extends FrontendWidgetBase
         /*
          * Supplied column list
          */
-        if ($this->columnOverride === null) {
-            $this->columnOverride = $this->getSession('visible', null);
+        if ($this->showSetup && $this->columnOverride === null) {
+            $this->columnOverride = $this->getUserPreference('visible', null);
         }
 
         if ($this->columnOverride && is_array($this->columnOverride)) {
@@ -875,7 +893,7 @@ class FrontendList extends FrontendWidgetBase
         /*
          * Use a supplied column order
          */
-        if ($columnOrder = $this->getSession('order', null)) {
+        if ($columnOrder = $this->getUserPreference('order', null)) {
             $orderedDefinitions = [];
             foreach ($columnOrder as $column) {
                 if (isset($this->allColumns[$column])) {
@@ -1283,7 +1301,8 @@ class FrontendList extends FrontendWidgetBase
         $options = [
             'defaultValue' => $value,
             'format' => $column->format,
-            'formatAlias' => 'dateTimeLongMin'
+            'formatAlias' => 'dateTimeLongMin',
+            'useTimezone' => $this->getColumnTimezonePreference($column),
         ];
 
         if (!empty($column->config['ignoreTimezone'])) {
@@ -1311,7 +1330,8 @@ class FrontendList extends FrontendWidgetBase
         $options = [
             'defaultValue' => $value,
             'format' => $column->format,
-            'formatAlias' => 'time'
+            'formatAlias' => 'time',
+            'useTimezone' => $this->getColumnTimezonePreference($column, false),
         ];
 
         if (!empty($column->config['ignoreTimezone'])) {
@@ -1342,7 +1362,8 @@ class FrontendList extends FrontendWidgetBase
         $options = [
             'defaultValue' => $value,
             'format' => $column->format,
-            'formatAlias' => 'dateLongMin'
+            'formatAlias' => 'dateLongMin',
+            'useTimezone' => $this->getColumnTimezonePreference($column, false),
         ];
 
         if (!empty($column->config['ignoreTimezone'])) {
@@ -1367,7 +1388,8 @@ class FrontendList extends FrontendWidgetBase
 
         $options = [
             'defaultValue' => $value,
-            'timeSince' => true
+            'timeSince' => true,
+            'useTimezone' => $this->getColumnTimezonePreference($column),
         ];
 
         if (!empty($column->config['ignoreTimezone'])) {
@@ -1392,15 +1414,35 @@ class FrontendList extends FrontendWidgetBase
 
         $options = [
             'defaultValue' => $value,
-            'timeTense' => true
+            'timeTense' => true,
+            'useTimezone' => $this->getColumnTimezonePreference($column),
         ];
-
-        if (!empty($column->config['ignoreTimezone'])) {
-            $options['ignoreTimezone'] = true;
-        }
 
         return Backend::dateTime($dateTime, $options);
     }
+
+    /**
+     * evalSelectableTypeValue processes as selectable value types for 'dropdown',
+     * 'radio', 'balloon-selector' and similar form field types
+     */
+    protected function evalSelectableTypeValue($record, $column, $value)
+    {
+        $formField = new \Backend\Classes\FormField($column->columnName, $column->label);
+
+        $fieldOptions = $formField->getOptionsFromModel(
+            $this->model,
+            $column->config['options'] ?? null,
+            $record->toArray()
+        );
+
+        return is_array($value)
+            ? $value = implode(', ', array_map(function ($value) use ($fieldOptions) {
+                    return $fieldOptions[$value];
+                }, $value))
+            : $fieldOptions[$value] ?? null
+        ;
+    }
+
     /**
      * Process as background color, to be seen at list
      */
@@ -1506,6 +1548,47 @@ class FrontendList extends FrontendWidgetBase
         }
     }
 
+    //
+    // Sorting
+    //
+
+    /**
+     * Event handler for sorting the list.
+     */
+    public function onSort()
+    {
+        if ($column = post('sortColumn')) {
+            /*
+             * Toggle the sort direction and set the sorting column
+             */
+            $sortOptions = ['column' => $this->getSortColumn(), 'direction' => $this->sortDirection];
+
+            if ($column != $sortOptions['column'] || $sortOptions['direction'] == 'asc') {
+                $this->sortDirection = $sortOptions['direction'] = 'desc';
+            }
+            else {
+                $this->sortDirection = $sortOptions['direction'] = 'asc';
+            }
+
+            $this->sortColumn = $sortOptions['column'] = $column;
+
+            /*
+             * Persist the page number
+             */
+            $this->currentPageNumber = post('page');
+
+            /*
+             * Attempt a refresh with the new sortOptions and update the
+             * the user session only if the query succeeded.
+             */
+            $result = $this->onRefresh();
+
+            $this->putSession('sort', $sortOptions);
+
+            return $result;
+        }
+    }
+
     /**
      * Returns the current sorting column, saved in a session or cached.
      */
@@ -1557,6 +1640,22 @@ class FrontendList extends FrontendWidgetBase
     }
 
     /**
+     * useSorting
+     */
+    protected function useSorting(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Returns the current sort direction or default of 'asc'
+     */
+    public function getSortDirection()
+    {
+        return $this->sortDirection ?? 'asc';
+    }
+
+    /**
      * Returns true if the column can be sorted.
      */
     protected function isSortable($column = null)
@@ -1588,6 +1687,50 @@ class FrontendList extends FrontendWidgetBase
     //
     // List Setup
     //
+
+    /**
+     * Event handler to display the list set up.
+     */
+    public function onLoadSetup()
+    {
+        $this->vars['columns'] = $this->getSetupListColumns();
+        $this->vars['perPageOptions'] = $this->getSetupPerPageOptions();
+        $this->vars['recordsPerPage'] = $this->recordsPerPage;
+        return $this->makePartial('setup_form');
+    }
+
+    /**
+     * Event handler to apply the list set up.
+     */
+    public function onApplySetup()
+    {
+        if (($visibleColumns = post('visible_columns')) && is_array($visibleColumns)) {
+            $this->columnOverride = $visibleColumns;
+            $this->putUserPreference('visible', $this->columnOverride);
+        }
+
+        $this->recordsPerPage = post('records_per_page', $this->recordsPerPage);
+
+        $this->putUserPreference('order', post('column_order'));
+
+        $this->putUserPreference('per_page', $this->recordsPerPage);
+
+        return $this->onRefresh();
+    }
+
+    /**
+     * Event handler to apply the list set up.
+     */
+    public function onResetSetup()
+    {
+        $this->resetUserPreference('visible');
+
+        $this->resetUserPreference('per_page');
+
+        $this->resetUserPreference('order');
+
+        return $this->onRefresh();
+    }
 
     /**
      * Returns an array of allowable records per page.
